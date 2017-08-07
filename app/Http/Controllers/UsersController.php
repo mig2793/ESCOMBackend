@@ -40,7 +40,8 @@ class UsersController extends Controller
         $countValidate = User::validateUser($request['nit']);
         if($countValidate > 0){
             return response()->json([
-                    "message" => "El usuario ya existe en la base de datos"
+                    "message" => "El usuario ya existe en la base de datos",
+                    "state"     => 0
                 ]);
         }else{
             $validatesave = User::create([
@@ -57,12 +58,16 @@ class UsersController extends Controller
             $validatesave = json_decode($validatesave,true);
 
             if(strlen($validatesave["documento"])>0){
+                $datauser = User::getUser($request['nit']);
                  return response()->json([
-                    "message" => "Usuario creado satisfactoriamente"
+                    "message"   => "Usuario creado satisfactoriamente",
+                    "data"      => $datauser,
+                    "state"     => 1
                 ]);     
             }else{
                  return response()->json([
-                    "message" => "Error al crear el usuario"
+                    "message" => "Error al crear el usuario",
+                    "state"     => 0
                 ]);     
             }
       
@@ -74,9 +79,7 @@ class UsersController extends Controller
 
         $data = User::login($request["nit"],$request["password"]);
         //$data = json_decode($data,true);
-        return response()->json([
-            'response' => $data
-        ]);
+        return $data;
     }
 
     public function restorePass($password,$id){
@@ -84,11 +87,11 @@ class UsersController extends Controller
 
         if($restPass>0){
             return response()->json([
-                'response' => "Cambio de constraseña exitoso"
+                'message' => "Cambio de constraseña exitoso"
             ]);
         }else{
             return response()->json([
-                'response' => "Error al cambiar la contraseña"
+                'message' => "Error al cambiar la contraseña"
             ]);   
         }
     }

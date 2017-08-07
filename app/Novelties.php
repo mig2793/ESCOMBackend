@@ -56,11 +56,12 @@ public $timestamps = false;
     }
 
     protected function insertNovelty($request){
-    	
+    	$mydate=getdate(date("U"));
+        $dateCurrent = "$mydate[year]/$mydate[mon]/$mydate[mday]";
     	$insertNovelty = DB::insert(DB::raw("
     			INSERT INTO novedades(Id_equipos,Fecha,Novedad,Id_prioridad,Estado)
 	    		VALUES 		(".$request["id_machine"].",
-	    					'".$request["date"]."',
+	    					'".$dateCurrent."',
 	    					'".$request["novelty"]."',
 	    					'".$request["id_priority"]."',
                             '".$request["state"]."')

@@ -3,7 +3,7 @@
 namespace escom\Http\Controllers;
 
 use Illuminate\Http\Request;
-use escom\Solicitudes
+use escom\Solicitudes;
 
 class SolicitudesController extends Controller
 {
@@ -14,7 +14,22 @@ class SolicitudesController extends Controller
      */
     public function index()
     {
-        $getall = Solicitudes::getAllMachine();
+        $getall = Solicitudes::getrequestAll();
+
+        if($getall){
+            return response()->json([
+                    "response" => $getall
+                ]);
+        }else{
+            return response()->json([
+                "response" => "No se encontraron datos"
+            ]);
+        }
+    }
+
+    public function getrequestAll($id)
+    {
+        $getall = Solicitudes::getrequestAll($id);
 
         if($getall){
             return response()->json([
@@ -45,31 +60,45 @@ class SolicitudesController extends Controller
      */
     public function store(Request $request)
     {
-        $validaterequest = Solicitudes::getMachine($request["serial"]);
-
-        if(!$validateMachine){
-            $validateInsert = Solicitudes::insertMachine($request);
-            
-            if($validateInsert > 0){
-                $ValidateInsertMxS = Solicitudes::insertMxS($request["serial"],$request["supplies"]);
-                if(!$ValidateInsertMxS){
-                    return response()->json([
-                            "response" => "Guardado satisfacoriamente"
-                        ]);                      
+        $mydate=getdate(date("U"));
+        $dateCurrent = "$mydate[mon]/$mydate[mday]/$mydate[year]";
+        if($request["fecha"]<$dateCurrent){
+            $validadate = Solicitudes::getRequestDate($request);
+            if($validadate[0]->count <= 0){
+                $validateInsert = Solicitudes::insertrequest($request);
+                
+                if($validateInsert > 0){
+                    $countSupplies = count($request["supplies"]);
+                    if($countSupplies>0){
+                        $getLastId = Solicitudes::getLastId($request);
+                        $ValidateInsertMxS = Solicitudes::insertMxS($getLastId[0]->Id_solicitud,$request["idequipo"],$request["supplies"]);
+                        $request["Id_solicitud"] = $getLastId[0]->Id_solicitud;
+                        $InsertState = Solicitudes::insertStateMachi($request);
+                        if(!$ValidateInsertMxS){
+                            return response()->json([
+                                    "response" => "Guardado satisfacoriamente"
+                                ]);                      
+                        }else{
+                            return response()->json([
+                                    "response" => "Hubo un error al guardar la información"
+                                ]);                      
+                        }   
+                    }else{
+                        return response()->json([
+                                "response" => "Guardado satisfacoriamente"
+                            ]);                        
+                    }
+          
                 }else{
                     return response()->json([
-                            "response" => "Hubo un error al guardar la información"
-                        ]);                      
-                }         
+                            "response" => "Error al guardar"
+                        ]);               
+                }
             }else{
                 return response()->json([
-                        "response" => "Error al guardar"
-                    ]);               
+                        "response" => "Ya se encuentra una solicitud para usar la máquina para esta hora. Por favor elige otra."
+                    ]);        
             }
-        }else{
-            return response()->json([
-                    "response" => "El equipo ya se encuentra registrado en la base de datos"
-                ]);        
         }
     }
 
@@ -132,16 +161,17 @@ class SolicitudesController extends Controller
      */
     public function destroy($id)
     {
-        $elemetsDelete = preg_split('~,~',$id);
-        $validateDelete = Equipos::deleteMxS($elemetsDelete[0],$elemetsDelete[1]);
+        $deleteReq = Solicitudes::deleteRequest($id);
 
-        if($validateDelete > 0){
+        if($deleteReq > 0){
             return response()->json([
-                    "response" => "Eliminado satisfactoriamente"
+                    "response" => "Eliminado satisfactoriamente",
+                    "state" => 1
                 ]);
         }else{
             return response()->json([
-                    "response" => "Error al eliminar el elemento"
+                    "response" => "Error al eliminar el elemento",
+                    "state" => 0
                 ]);            
         }
     }

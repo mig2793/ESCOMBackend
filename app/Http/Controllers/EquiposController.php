@@ -54,21 +54,25 @@ class EquiposController extends Controller
                 $ValidateInsertMxS = Equipos::insertMxS($request["serial"],$request["supplies"]);
                 if(!$ValidateInsertMxS){
                     return response()->json([
-                            "response" => "Guardado satisfacoriamente"
+                            "response" => "Guardado satisfacoriamente",
+                            "state" => 1
                         ]);                      
                 }else{
                     return response()->json([
-                            "response" => "Hubo un error al guardar la información"
+                            "response" => "Hubo un error al guardar la información",
+                            "state" => 0
                         ]);                      
                 }         
             }else{
                 return response()->json([
-                        "response" => "Error al guardar"
+                        "response" => "Error al guardar",
+                        "state" => 0
                     ]);               
             }
         }else{
             return response()->json([
-                    "response" => "El equipo ya se encuentra registrado en la base de datos"
+                    "response" => "El equipo ya se encuentra registrado en la base de datos",
+                    "state" => 0
                 ]);        
         }
     }
@@ -89,6 +93,22 @@ class EquiposController extends Controller
             ]);
         }else
             return "La máquina o equipo no se encuentra en la base de datos";
+    }
+
+    public function getSupplieMachine($id)
+    {
+        $gesupplieXMachi =  Equipos::getSupplieXMachine($id);
+
+        if(isset($gesupplieXMachi[0]->Id_insumo)){
+            return response()->json([
+                "response" => $gesupplieXMachi
+            ]);
+        }else{
+            return response()->json([
+                "response" => "No hay insumos disponible para esta máquina",
+                "state" => 0
+            ]);
+        }
     }
 
     /**
@@ -115,11 +135,13 @@ class EquiposController extends Controller
 
         if($validateUpdate > 0){
             return response()->json([
-                    "response" => "Datos actualizados satisfactoriamente"
+                    "response" => "Datos actualizados satisfactoriamente",
+                    "state" => 1
                 ]);            
         }else{
             return response()->json([
-                    "response" => "Error al actualizar"
+                    "response" => "Error al actualizar",
+                    "state" => 0
                 ]);               
         }
     }
@@ -137,11 +159,13 @@ class EquiposController extends Controller
 
         if($validateDelete > 0){
             return response()->json([
-                    "response" => "Eliminado satisfactoriamente"
+                    "response" => "Eliminado satisfactoriamente",
+                    "state" => 1
                 ]);
         }else{
             return response()->json([
-                    "response" => "Error al eliminar el elemento"
+                    "response" => "Error al eliminar el elemento",
+                    "state" => 0
                 ]);            
         }
     }

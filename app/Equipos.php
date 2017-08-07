@@ -50,6 +50,19 @@ class Equipos extends Model
     	return $selectMachine;
     }
 
+    protected function getSupplieXMachine($serial){
+        $selectsupplie = DB::select( DB::raw("
+                SELECT      i.Id_insumo,
+                            i.insumo,
+                            i.cantidad
+                FROM equipos e
+                INNER JOIN equiposxinsumo ei ON ei.id_equipo = e.Serial
+                INNER JOIN insumos i ON i.Id_insumo = ei.Id_insumo
+                WHERE ei.id_equipo = '".$serial."'"));  
+
+        return $selectsupplie;
+    }
+
     protected function getAllMachine(){
     	$selectAllM = DB::select(DB::raw("
     			SELECT  e.id_Equipos,

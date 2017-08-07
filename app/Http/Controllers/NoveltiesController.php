@@ -39,11 +39,13 @@ class NoveltiesController extends Controller
         
         if($validateInsert > 0){
             return response()->json([
-                    "response" => "Guardado satisfactoriamente"
+                    "response" => "Guardado satisfactoriamente",
+                    "state" => 1
                 ]);            
         }else{
             return response()->json([
-                    "response" => "Error al guardar"
+                    "response" => "Error al guardar",
+                    "state" => 0
                 ]);               
         }
     }

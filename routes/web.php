@@ -18,6 +18,7 @@ Route::put('/users/','UsersController@restorePassword');
 
 //Rutas para los webservices de equipos
 Route::resource('maquinas','EquiposController');
+Route::get('/maquinas/suppliexm/{id}','EquiposController@getSupplieMachine');
 
 //Rutas para los webservices de insumos
 Route::resource('insumos','suppliesController');
@@ -36,6 +37,7 @@ Route::resource('maquinasInsumos','EquiXInsuController');
 
 //Rutas para los webservices de solicitudes
 Route::resource('solicitudes','SolicitudesController');
+Route::get('/solicitudes/getrequestAll/{id}','SolicitudesController@getrequestAll');
 
 Route::get('/', function () {
     return view('welcome');

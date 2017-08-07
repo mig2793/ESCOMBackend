@@ -55,17 +55,25 @@ class User extends Model
                                     te.id,
                                     te.tipoEstudio
                         FROM usuarios u 
-                        INNER JOIN rango r ON r.id_rango = u.id_rango
+                        INNER JOIN rangos r ON r.id_rango = u.id_rango
                         INNER JOIN rol ro ON ro.id_rol = u.id_rol
                         INNER JOIN tipoestudio te ON te.id = u.id_testudio
                         WHERE documento = '".$nit."'"));
 
-                return $login;
+                return response()->json([
+                    'message' => $login,
+                    'state' => 1
+                ]);
             }else
-                return "Contraseña incorrecta";
-
+                return response()->json([
+                    'message' => "Contraseña incorrecta",
+                    'state' => 0
+                ]);
         }else
-            return 'El usuario no se encuentra registrado';
+            return response()->json([
+                'message' => 'El usuario no se encuentra registrado',
+                'state' => 0
+            ]);
         
     }
 
@@ -82,7 +90,7 @@ class User extends Model
                             te.id,
                             te.tipoEstudio
                 FROM usuarios u 
-                INNER JOIN rango r ON r.id_rango = u.id_rango
+                INNER JOIN rangos r ON r.id_rango = u.id_rango
                 INNER JOIN rol ro ON ro.id_rol = u.id_rol
                 INNER JOIN tipoestudio te ON te.id = u.id_testudio
                 WHERE documento = '".$nit."'"));  
@@ -104,7 +112,7 @@ class User extends Model
         return $UsertUpd;   
     }
 
-    protected restorePassword($password,$id){
+    protected function restorePassword($password,$id){
 
         $updatePassword = DB::update(DB::raw(" 
                         UPDATE usuarios

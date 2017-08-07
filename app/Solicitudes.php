@@ -31,14 +31,20 @@ class Solicitudes extends Model
                             s.Fecha,
                             s.Hora_inicio,
                             s.Hora_final,
-                            s.Detalles_Actividad
+                            s.Detalles_Actividad,
+                            em.Id_solicitud,
+                            em.estado_solicitud,
+                            em.img_entregado,
+                            em.img_devuelto
                 FROM solicitudes s 
                 INNER JOIN usuarios u ON u.documento = s.id_persona
                 INNER JOIN equipos e ON e.Serial = s.Id_maquina
+                INNER JOIN estadomaquina em ON em.Id_solicitud = s.Id_solicitud
                 WHERE s.Id_solicitud = '".$idsolicitud."'"));
 
         $selectsupplies = DB::select( DB::raw("
-                SELECT  sei.id_insumo,
+                SELECT  sei.Id_solicitud,
+                        sei.id_insumo,
                 		i.insumo
                 FROM solicitudxequipoxinsumo sei
                 INNER JOIN insumos i ON i.Id_insumo = sei.id_insumo 
@@ -51,30 +57,77 @@ class Solicitudes extends Model
     	return $selectRequest;
     }
 
+    protected function getrequestAll($idPersona){
+        $selectRequest = DB::select( DB::raw("
+                SELECT      s.Id_solicitud,
+                            s.Id_maquina,
+                            e.Equipo,
+                            s.id_persona,
+                            u.nombre,
+                            u.apellido,
+                            s.Fecha,
+                            s.Hora_inicio,
+                            s.Hora_final,
+                            s.Detalles_Actividad,
+                            em.Id_estadomaquina,
+                            em.estado_solicitud,
+                            em.img_entregado,
+                            em.img_devuelto,
+                            '' as insumos
+                FROM solicitudes s 
+                INNER JOIN usuarios u ON u.documento = s.id_persona
+                INNER JOIN equipos e ON e.Serial = s.Id_maquina
+                LEFT JOIN estadomaquina em ON em.Id_solicitud = s.Id_solicitud
+                WHERE s.id_persona = '".$idPersona."'"));
+
+        $selectsupplies = DB::select( DB::raw("
+                SELECT  sei.Id_solicitud,
+                        sei.id_insumo,
+                        i.insumo
+                FROM solicitudxequipoxinsumo sei
+                INNER JOIN insumos i ON i.Id_insumo = sei.id_insumo
+                INNER JOIN solicitudes s ON s.Id_solicitud =  sei.Id_solicitud
+                WHERE s.id_persona = '".$idPersona."'"));
+
+        if($selectRequest){
+            for($i=0;$i<count($selectRequest);$i++){
+                $selectRequest[$i]->insumos = [];
+                for($j=0;$j<count($selectsupplies);$j++){
+                    if($selectRequest[$i]->Id_solicitud == $selectsupplies[$j]->Id_solicitud){
+                        array_push($selectRequest[$i]->insumos,$selectsupplies[$j]);
+                    }
+                }
+            }   
+        }
+        return $selectRequest;
+    }
+
+    protected function getLastId($request){
+
+        $getlastId = DB::select(DB::raw("
+            SELECT s.Id_solicitud
+            FROM solicitudes s 
+            WHERE s.Id_maquina = '".$request["idequipo"]."'
+            AND s.id_persona = '".$request["idpersona"]."'
+            AND s.Fecha = '".$request["fecha"]."'
+            ORDER BY s.Id_solicitud desc
+            LIMIT 1"));
+
+        return $getlastId;
+    }
+
     protected function getRequestDate($date){
         $selectRequest = DB::select( DB::raw("
-                SELECT  count(*)
+                SELECT  count(*) as count
                 FROM solicitudes s 
-                WHERE s.Fecha = '".$date[0]."' 
-                AND s.Hora_inicio >= '".$date[1]."' 
-                AND s.Hora_final <= '".$date[2]."'")); 
+                WHERE s.Fecha = '".$date["fecha"]."' 
+                AND (s.Hora_inicio BETWEEN '".$date["horaInicio"]."' AND '".$date["horaFin"]."'
+                OR s.Hora_final BETWEEN '".$date["horaInicio"]."' AND '".$date["horaFin"]."')")); 
 
         return $selectRequest;       
     }
 
-    protected function getAllrequest(){
-    	$selectAllM = DB::select(DB::raw("
-    			SELECT  e.id_Equipos,
-                        e.Equipo,
-                        e.Serial,
-                        e.Imagen,
-                        e.Estado
-                FROM equipos e"));
-
-    	return $selectAllM;
-    }
-
-    protected function insertrequest($request){  	
+    protected function insertrequest($request){	
     	$insertsolicitud = DB::insert(DB::raw("
     			INSERT INTO solicitudes(Id_maquina,
 						    			id_persona,
@@ -93,6 +146,22 @@ class Solicitudes extends Model
     	return $insertsolicitud;
     }
 
+    protected function insertStateMachi($request){ 
+        $insertsolistate = DB::insert(DB::raw("
+                INSERT INTO estadomaquina
+                            (Id_solicitud,
+                            estado_solicitud,
+                            img_entregado,
+                            img_devuelto)
+                VALUES      ('".$request["Id_solicitud"]."',
+                            '".$request["estado_solicitud"]."',
+                            '".$request["img_entregado"]."',
+                            '".$request["img_devuelto"]."');
+            "));
+
+        return $insertsolistate;
+    }
+
     protected function insertMxS($idSolicitud,$idEquipo,$supplies){
 
         $arraybad = array();
@@ -102,7 +171,7 @@ class Solicitudes extends Model
     			INSERT INTO solicitudxequipoxinsumo(Id_solicitud,id_equipos,id_insumo)
 	    		VALUES 		('".$idSolicitud."',
 	    					'".$idEquipo."',
-	    					'".$supplies."');
+	    					'".$supplies[$i]."');
     		"));
             if($insertMxS <= 0)
                 array_push($arraybad,$supplies[$i]);          
@@ -155,6 +224,24 @@ class Solicitudes extends Model
             "));
 
         return $deleteMxS;
-    }   
+    }  
+
+    protected function deleteRequest($id){
+        $deleteReqSxE = DB::delete(DB::raw("
+                DELETE FROM solicitudxequipoxinsumo
+                WHERE Id_solicitud = '".$id."';
+            "));
+
+        $deleteStateReq = DB::delete(DB::raw("
+                DELETE FROM estadomaquina
+                WHERE Id_solicitud = '".$id."'
+            ")); 
+        $deleteReq = DB::delete(DB::raw("
+                DELETE FROM solicitudes
+                WHERE Id_solicitud = '".$id."'
+            ")); 
+
+        return $deleteReq;
+    } 
 
 }
