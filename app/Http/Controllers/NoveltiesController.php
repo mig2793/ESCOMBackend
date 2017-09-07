@@ -18,13 +18,32 @@ class NoveltiesController extends Controller
 
         if($getall){
             return response()->json([
-                    "response" => $getall
+                    "response" => $getall,
+                    "status" => 1
                 ]);
         }else{
             return response()->json([
-                "response" => "No se encontraron datos"
+                "response" => "No se encontraron datos",
+                "status" => 0
             ]);
         }        
+    }
+
+    public function getNoveltiesDates(Request $request){
+
+        $getall = Novelties::getNovelDates($request);
+
+        if($getall){
+            return response()->json([
+                    "response" => $getall,
+                    "status" => 1
+                ]);
+        }else{
+            return response()->json([
+                "response" => "No se encontraron datos",
+                "status" => 0
+            ]);
+        }         
     }
 
     /**
@@ -92,11 +111,13 @@ class NoveltiesController extends Controller
 
         if($validateUpdate > 0){
             return response()->json([
-                    "response" => "Datos actualizados satisfactoriamente"
+                    "response" => "Datos actualizados satisfactoriamente",
+                    "state" => 1
                 ]);            
         }else{
             return response()->json([
-                    "response" => "Error al actualizar"
+                    "response" => "Error al actualizar",
+                    "state" => 0
                 ]);               
         }
     }

@@ -33,9 +33,28 @@ public $timestamps = false;
                 FROM novedades n 
                 INNER JOIN prioridad p ON p.Id_prioridad = n.Id_prioridad
                 INNER JOIN equipos e ON e.id_Equipos = n.Id_equipos
-                WHERE n.Id_novedad = ".$id.""));  
+                WHERE n.Id_novedad = ".$id."
+                ORDER BY n.Fecha desc"));  
 
     	return $selectnovelty;
+    }
+
+    protected function getNovelDates($date){
+        $selectnovelty = DB::select( DB::raw("
+                SELECT      e.Serial,
+                            n.Id_novedad,
+                            e.Equipo,
+                            n.Fecha,
+                            n.Novedad,
+                            p.prioridad
+                            
+                FROM novedades n 
+                INNER JOIN prioridad p ON p.Id_prioridad = n.Id_prioridad
+                INNER JOIN equipos e ON e.id_Equipos = n.Id_equipos
+                WHERE n.Fecha >= '".$date["datei"]."' and n.Fecha <= '".$date["datef"]."'
+                ORDER BY n.Fecha desc"));  
+
+        return $selectnovelty;
     }
 
     protected function getAllNovelties(){
@@ -50,7 +69,8 @@ public $timestamps = false;
                             e.Serial
                 FROM novedades n 
                 INNER JOIN prioridad p ON p.Id_prioridad = n.Id_prioridad
-                INNER JOIN equipos e ON e.id_Equipos = n.Id_equipos"));
+                INNER JOIN equipos e ON e.id_Equipos = n.Id_equipos
+                WHERE n.Estado = 'Enviado'"));
 
     	return $selectAllN;
     }

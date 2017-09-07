@@ -34,10 +34,11 @@ class Equipos extends Model
                             m.marca
                 FROM equipos e 
                 INNER JOIN marcas m ON e.id_Marca = m.id_marca
-                WHERE e.Serial = '".$serial."'"));
+                WHERE e.Serial = '".$serial."'
+                ORDER BY e.Equipo desc"));
 
         $selectsupplies = DB::select( DB::raw("
-                SELECT  ei.id_insumo,
+                SELECT  ei.Id_insumo,
                         i.insumo
                 FROM equiposxinsumo ei
                 INNER JOIN insumos i ON i.Id_insumo = ei.id_insumo 
@@ -71,9 +72,25 @@ class Equipos extends Model
                         e.Imagen,
                         e.Estado
                 FROM equipos e 
-                WHERE e.Estado = 'Disponible'"));
+                WHERE e.Estado = 'Disponible'
+                ORDER BY e.Equipo desc"));
 
     	return $selectAllM;
+    }
+
+
+    protected function MachineMaintenance(){
+        $getMachineMaint = DB::select(DB::raw("
+                    SELECT 
+                    e.id_Equipos,
+                    e.Equipo,
+                    e.Serial,
+                    e.TiempoMantenimiento,
+                    e.TiempoUsoActual 
+                    FROM equipos e
+                    WHERE e.TiempoMantenimiento - e.TiempoUsoActual <= 5"));
+        
+        return $getMachineMaint;
     }
 
     protected function insertMachine($request){
@@ -110,12 +127,23 @@ class Equipos extends Model
     	return $updateMachine;
     }
 
+    protected function updateMachineState($request,$serial){
+        $updateMachine = DB::update(DB::raw("
+                UPDATE  equipos
+                SET     Estado              =   '".$request["state"]."',
+                        TiempoUsoActual     =   ".$request["timeUseCurrent"]."
+                WHERE   Serial              =   '".$serial."'
+            "));
+
+        return $updateMachine;
+    }
+
     protected function insertMxS($idEquipo,$supplies){
         $arraybad = array();
         $countSupplies = count($supplies);
         for ($i = 0; $i < $countSupplies; $i++) { 
             $insertMxS = DB::insert(DB::raw("
-                    INSERT INTO equiposxinsumo(id_equipo,id_insumo) 
+                    INSERT INTO equiposxinsumo(id_equipo,Id_insumo) 
                     VALUES ('".$idEquipo."','".$supplies[$i]."')
                 "));
             if($insertMxS <= 0)
@@ -128,7 +156,7 @@ class Equipos extends Model
     protected function deleteMxS($idEquipo,$idsupplies){
         $deleteMxS = DB::delete(DB::raw("
                 DELETE FROM equiposxinsumo
-                WHERE id_equipo = '".$idEquipo."' AND id_insumo = '".$idsupplies."'
+                WHERE id_equipo = '".$idEquipo."' AND Id_insumo = '".$idsupplies."'
             "));
 
         return $deleteMxS;

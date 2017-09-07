@@ -25,7 +25,8 @@ class Marcas extends Model
                 SELECT      m.id_marca,
                             m.marca
                 FROM marcas m
-                WHERE m.marca LIKE '%".$mark."%'"));  
+                WHERE m.marca = '".$mark."'
+                ORDER BY m.marca asc"));  
 
     	return $selectmark;
     }
@@ -34,7 +35,8 @@ class Marcas extends Model
     	$selectAllM = DB::select(DB::raw("
                 SELECT      m.id_marca,
                             m.marca
-                FROM marcas m"));
+                FROM marcas m
+                ORDER BY m.marca asc"));
 
     	return $selectAllM;
     }
@@ -51,8 +53,8 @@ class Marcas extends Model
     protected function updateMark($request,$id){
     	$updatemark = DB::update(DB::raw("
     			UPDATE 	marcas
-    			SET 	marca				=  	'".$request["mark"]."'
-			    WHERE 	id_marca 			=	'".$id."'
+    			SET 	marca       = '".$request["mark"]."'
+			    WHERE 	id_marca    = '".$id."'
     		"));
 
     	return $updatemark;

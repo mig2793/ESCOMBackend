@@ -14,7 +14,7 @@ class SolicitudesController extends Controller
      */
     public function index()
     {
-        $getall = Solicitudes::getrequestAll();
+        $getall = Solicitudes::getrequestAlladmin();
 
         if($getall){
             return response()->json([
@@ -40,6 +40,20 @@ class SolicitudesController extends Controller
                 "response" => "No se encontraron datos"
             ]);
         }
+    }
+
+    public function getrequestDateAll(Request $request){
+        $getall = Solicitudes::getrequestDateAll($request);
+
+        if($getall){
+            return response()->json([
+                    "response" => $getall
+                ]);
+        }else{
+            return response()->json([
+                "response" => "No se encontraron datos"
+            ]);
+        }        
     }
 
     /**
@@ -68,15 +82,15 @@ class SolicitudesController extends Controller
                 $validateInsert = Solicitudes::insertrequest($request);
                 
                 if($validateInsert > 0){
+                    $getLastId = Solicitudes::getLastId($request);
+                    $request["Id_solicitud"] = $getLastId[0]->Id_solicitud;
+                    $InsertState = Solicitudes::insertStateMachi($request);
                     $countSupplies = count($request["supplies"]);
                     if($countSupplies>0){
-                        $getLastId = Solicitudes::getLastId($request);
                         $ValidateInsertMxS = Solicitudes::insertMxS($getLastId[0]->Id_solicitud,$request["idequipo"],$request["supplies"]);
-                        $request["Id_solicitud"] = $getLastId[0]->Id_solicitud;
-                        $InsertState = Solicitudes::insertStateMachi($request);
                         if(!$ValidateInsertMxS){
                             return response()->json([
-                                    "response" => "Guardado satisfacoriamente"
+                                    "response" => "Guardado satisfactoriamente"
                                 ]);                      
                         }else{
                             return response()->json([
@@ -85,7 +99,7 @@ class SolicitudesController extends Controller
                         }   
                     }else{
                         return response()->json([
-                                "response" => "Guardado satisfacoriamente"
+                                "response" => "Guardado satisfactoriamente"
                             ]);                        
                     }
           
@@ -110,14 +124,17 @@ class SolicitudesController extends Controller
      */
     public function show($id)
     {
-        $getMachine =  Equipos::getMachine($id);
+        $getsolicitud =  Solicitudes::getrequest($id);
 
-        if(isset($getMachine[0]->Serial)){
+        if(isset($getsolicitud[0]->Id_solicitud)){
             return response()->json([
-                "response" => $getMachine
+                "response" => $getsolicitud
             ]);
         }else
-            return "La máquina o equipo no se encuentra en la base de datos";
+            return response()->json([
+                "response" => "No se encontró la solicitud",
+                "state" => 0
+            ]);
     }
 
     /**
@@ -138,17 +155,17 @@ class SolicitudesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
-    {
-        $validateUpdate = Equipos::updateMachine($request,$id);
-
-        if($validateUpdate > 0){
+    public function update(Request $request, $id){
+        $validateUpdateState = Solicitudes::updatestate($request, $id);
+        if($validateUpdateState > 0){
             return response()->json([
-                    "response" => "Datos actualizados satisfactoriamente"
+                    "response" => "Datos actualizados satisfactoriamente",
+                    "status"   => "1"
                 ]);            
         }else{
             return response()->json([
-                    "response" => "Error al actualizar"
+                    "response" => "Error al actualizar",
+                    "status"   => "0"
                 ]);               
         }
     }

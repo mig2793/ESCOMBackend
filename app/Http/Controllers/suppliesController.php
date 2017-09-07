@@ -45,23 +45,26 @@ class suppliesController extends Controller
      */
     public function store(Request $request)
     {
-        $validatesupplie = supplies::getSupplie($request["supplie"]);
+        $validatesupplie = supplies::getSupplie($request["code"]);
 
         if(!$validatesupplie){
             $validateInsert = supplies::insertSupplie($request);
             
             if($validateInsert > 0){
                 return response()->json([
-                        "response" => "Guardado satisfactoriamente"
+                        "response" => "Guardado satisfactoriamente",
+                        "status" => 1
                     ]);            
             }else{
                 return response()->json([
-                        "response" => "Error al guardar"
+                        "response" => "Error al guardar",
+                        "status" => 0
                     ]);               
             }
         }else{
             return response()->json([
-                    "response" => "El insumo ya se encuentra registrado en la base de datos"
+                    "response" => "El insumo ya se encuentra registrado en la base de datos",
+                    "status" => 0
                 ]);        
         }
     }

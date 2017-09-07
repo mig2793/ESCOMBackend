@@ -111,7 +111,10 @@ class UsersController extends Controller
                 "response" => $getU
             ]);
         }else
-            return "No hay ningun usuario registrado con este numero de documento";
+            return response()->json([
+                "response"  => "No hay ningun usuario registrado con este numero de documento",
+                "status"     => 0
+            ]);
     }
 
     /**
@@ -134,9 +137,14 @@ class UsersController extends Controller
      */
     public function update(Request $request, $id)
     {
+
+        if($request['password'] != ""){
+            $changePassword = User::restorePassword($request['password'],$id);
+        }
+
         $updateU = User::updateUser($request, $id);
 
-        if($updateU > 0){
+        if($updateU > 0 || $changePassword > 0){
             return response()->json([
                     "response" => "Datos actualizados satisfactoriamente"
                 ]);            

@@ -45,7 +45,11 @@ class EquiposController extends Controller
      */
     public function store(Request $request)
     {
-        $validateMachine = Equipos::getMachine($request["serial"]);
+
+            $filename = $request["image"];
+            return $filename;
+
+        /*$validateMachine = Equipos::getMachine($request["serial"]);
 
         if(!$validateMachine){
             $validateInsert = Equipos::insertMachine($request);
@@ -74,7 +78,7 @@ class EquiposController extends Controller
                     "response" => "El equipo ya se encuentra registrado en la base de datos",
                     "state" => 0
                 ]);        
-        }
+        }*/
     }
 
     /**
@@ -89,10 +93,30 @@ class EquiposController extends Controller
 
         if(isset($getMachine[0]->Serial)){
             return response()->json([
-                "response" => $getMachine
+                "response" => $getMachine,
+                "status" => 1
             ]);
         }else
-            return "La máquina o equipo no se encuentra en la base de datos";
+            return response()->json([
+                "response" => "La máquina o equipo no se encuentra en la base de datos",
+                "status" => 0
+            ]);
+    }
+
+    public function MachineMainte()
+    {
+        $getMachineMainte =  Equipos::MachineMaintenance();
+
+        if($getMachineMainte){
+            return response()->json([
+                "response" => $getMachineMainte,
+                "status" => 1
+            ]);
+        }else
+            return response()->json([
+                "response" => "No hay datos",
+                "status" => 0
+            ]);
     }
 
     public function getSupplieMachine($id)
@@ -143,6 +167,40 @@ class EquiposController extends Controller
                     "response" => "Error al actualizar",
                     "state" => 0
                 ]);               
+        }
+    }
+
+    public function updateState(Request $request, $id)
+    {
+        $validateUpdate = Equipos::updateMachineState($request,$id);
+
+        if($validateUpdate > 0){
+            return response()->json([
+                    "response" => "Datos actualizados satisfactoriamente",
+                    "state" => 1
+                ]);            
+        }else{
+            return response()->json([
+                    "response" => "Error al actualizar",
+                    "state" => 0
+                ]);               
+        }
+    }
+
+    public function insertMxSCon(Request $request)
+    {
+        $validateInsert = Equipos::insertMxS($request["serial"],$request["supplies"]);
+
+        if($validateInsert > 0){
+            return response()->json([
+                    "response" => "Guardado satisfactoriamente",
+                    "state" => 1
+                ]);
+        }else{
+            return response()->json([
+                    "response" => "Error al guardar",
+                    "state" => 0
+                ]);            
         }
     }
 

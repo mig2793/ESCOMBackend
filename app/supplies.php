@@ -23,10 +23,12 @@ class supplies extends Model
     protected function getSupplie($supplie){
     	$selectsupplie = DB::select( DB::raw("
                 SELECT      i.Id_insumo,
+                            i.codigo,
                             i.insumo,
                             i.cantidad
                 FROM insumos i
-                WHERE i.insumo LIKE '%".$supplie."%'"));  
+                WHERE i.codigo = '".$supplie."'
+                ORDER BY i.insumo desc"));  
 
     	return $selectsupplie;
     }
@@ -34,18 +36,21 @@ class supplies extends Model
     protected function getAllsupplies(){
     	$selectAllS = DB::select(DB::raw("
                 SELECT      i.Id_insumo,
+                            i.codigo,
                             i.insumo,
                             i.cantidad
-                FROM insumos i"));
+                FROM insumos i
+                ORDER BY i.insumo asc"));
 
     	return $selectAllS;
     }
 
     protected function insertSupplie($request){
     	$insertsupplie = DB::insert(DB::raw("
-    			INSERT INTO insumos(insumo,cantidad)
+    			INSERT INTO insumos(insumo,cantidad,codigo)
 	    		VALUES 		('".$request["supplie"]."',
-	    					'".$request["quantity"]."');
+	    					'".$request["quantity"]."',
+                            '".$request["code"]."');
     		"));
 
     	return $insertsupplie;

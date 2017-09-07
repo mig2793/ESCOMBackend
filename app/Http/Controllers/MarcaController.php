@@ -52,16 +52,19 @@ class MarcaController extends Controller
             
             if($validateInsert > 0){
                 return response()->json([
-                        "response" => "Guardado satisfactoriamente"
+                        "response" => "Guardado satisfactoriamente",
+                        "status" => 1
                     ]);            
             }else{
                 return response()->json([
-                        "response" => "Error al guardar"
+                        "response" => "Error al guardar",
+                        "status" => 0
                     ]);               
             }
         }else{
             return response()->json([
-                    "response" => "La marca ya se encuentra registrado en la base de datos"
+                    "response" => "La marca ya se encuentra registrada",
+                    "status" => 0
                 ]);        
         } 
     }
@@ -78,10 +81,14 @@ class MarcaController extends Controller
 
         if(isset($getMark[0]->id_marca)){
             return response()->json([
-                "response" => $getMark
+                "response" => $getMark,
+                "state" => 1
             ]);
         }else
-            return "La marca no se encuentra registrada en la base de datos"; 
+            return response()->json([
+                "response" => "Esta marca no se encuentra registrada",
+                "state" => 0
+            ]);
     }
 
     /**

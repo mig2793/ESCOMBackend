@@ -4,6 +4,7 @@ namespace escom;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class Solicitudes extends Model
 {
@@ -21,6 +22,8 @@ class Solicitudes extends Model
     ];
 
     protected function getrequest($idsolicitud){
+        $date = Carbon::today();
+        $date =  preg_split('~ ~',$date);
     	$selectRequest = DB::select( DB::raw("
                 SELECT      s.Id_solicitud,
                             s.Id_maquina,
@@ -35,12 +38,16 @@ class Solicitudes extends Model
                             em.Id_solicitud,
                             em.estado_solicitud,
                             em.img_entregado,
-                            em.img_devuelto
+                            em.img_devuelto,
+                            em.comentario_ent,
+                            em.comentario_dev,
+                            datediff(s.Fecha, '".$date[0]."') as days
                 FROM solicitudes s 
                 INNER JOIN usuarios u ON u.documento = s.id_persona
                 INNER JOIN equipos e ON e.Serial = s.Id_maquina
                 INNER JOIN estadomaquina em ON em.Id_solicitud = s.Id_solicitud
-                WHERE s.Id_solicitud = '".$idsolicitud."'"));
+                WHERE s.Id_solicitud = '".$idsolicitud."'
+                ORDER BY s.Fecha asc"));
 
         $selectsupplies = DB::select( DB::raw("
                 SELECT  sei.Id_solicitud,
@@ -57,7 +64,52 @@ class Solicitudes extends Model
     	return $selectRequest;
     }
 
+    protected function getrequestDateAll($date){
+        $selectRequest = DB::select( DB::raw("
+                SELECT      s.Id_solicitud,
+                            e.Equipo,
+                            u.nombre,
+                            u.apellido,
+                            s.Fecha,
+                            s.Hora_inicio,
+                            s.Hora_final,
+                            s.Detalles_Actividad,
+                            em.estado_solicitud,
+                            em.img_entregado,
+                            em.img_devuelto,
+                            em.comentario_ent,
+                            em.comentario_dev
+                FROM solicitudes s 
+                INNER JOIN usuarios u ON u.documento = s.id_persona
+                INNER JOIN equipos e ON e.Serial = s.Id_maquina
+                INNER JOIN estadomaquina em ON em.Id_solicitud = s.Id_solicitud
+                WHERE  s.Fecha >= '".$date["datei"]."' and s.Fecha <= '".$date["datef"]."'
+                ORDER BY s.Fecha asc"));
+
+        $selectsupplies = DB::select( DB::raw("
+                SELECT  sei.Id_solicitud,
+                        sei.id_insumo,
+                        i.insumo
+                FROM solicitudxequipoxinsumo sei
+                INNER JOIN insumos i ON i.Id_insumo = sei.id_insumo
+                INNER JOIN solicitudes s ON s.Id_solicitud =  sei.Id_solicitud"));
+
+        if($selectRequest){
+            for($i=0;$i<count($selectRequest);$i++){
+                $selectRequest[$i]->insumos = [];
+                for($j=0;$j<count($selectsupplies);$j++){
+                    if($selectRequest[$i]->Id_solicitud == $selectsupplies[$j]->Id_solicitud){
+                        array_push($selectRequest[$i]->insumos,$selectsupplies[$j]);
+                    }
+                }
+            }   
+        }
+        return $selectRequest;  
+    }
+
     protected function getrequestAll($idPersona){
+        $date = Carbon::today();
+        $date =  preg_split('~ ~',$date);
         $selectRequest = DB::select( DB::raw("
                 SELECT      s.Id_solicitud,
                             s.Id_maquina,
@@ -73,12 +125,14 @@ class Solicitudes extends Model
                             em.estado_solicitud,
                             em.img_entregado,
                             em.img_devuelto,
-                            '' as insumos
+                            '' as insumos,
+                            datediff(s.Fecha, '".$date[0]."') as days
                 FROM solicitudes s 
                 INNER JOIN usuarios u ON u.documento = s.id_persona
                 INNER JOIN equipos e ON e.Serial = s.Id_maquina
                 LEFT JOIN estadomaquina em ON em.Id_solicitud = s.Id_solicitud
-                WHERE s.id_persona = '".$idPersona."'"));
+                WHERE s.id_persona = '".$idPersona."'
+                ORDER BY s.Fecha asc"));
 
         $selectsupplies = DB::select( DB::raw("
                 SELECT  sei.Id_solicitud,
@@ -88,6 +142,53 @@ class Solicitudes extends Model
                 INNER JOIN insumos i ON i.Id_insumo = sei.id_insumo
                 INNER JOIN solicitudes s ON s.Id_solicitud =  sei.Id_solicitud
                 WHERE s.id_persona = '".$idPersona."'"));
+
+        if($selectRequest){
+            for($i=0;$i<count($selectRequest);$i++){
+                $selectRequest[$i]->insumos = [];
+                for($j=0;$j<count($selectsupplies);$j++){
+                    if($selectRequest[$i]->Id_solicitud == $selectsupplies[$j]->Id_solicitud){
+                        array_push($selectRequest[$i]->insumos,$selectsupplies[$j]);
+                    }
+                }
+            }   
+        }
+        return $selectRequest;
+    }
+
+    protected function getrequestAlladmin(){
+        $date = Carbon::today();
+        $date =  preg_split('~ ~',$date);
+        $selectRequest = DB::select( DB::raw("
+                SELECT      s.Id_solicitud,
+                            s.Id_maquina,
+                            e.Equipo,
+                            s.id_persona,
+                            u.nombre,
+                            u.apellido,
+                            s.Fecha,
+                            s.Hora_inicio,
+                            s.Hora_final,
+                            s.Detalles_Actividad,
+                            em.Id_estadomaquina,
+                            em.estado_solicitud,
+                            em.img_entregado,
+                            em.img_devuelto,
+                            '' as insumos,
+                            datediff(s.Fecha, '".$date[0]."') as days
+                FROM solicitudes s 
+                INNER JOIN usuarios u ON u.documento = s.id_persona
+                INNER JOIN equipos e ON e.Serial = s.Id_maquina
+                LEFT JOIN estadomaquina em ON em.Id_solicitud = s.Id_solicitud
+                ORDER BY s.Fecha asc"));
+
+        $selectsupplies = DB::select( DB::raw("
+                SELECT  sei.Id_solicitud,
+                        sei.id_insumo,
+                        i.insumo
+                FROM solicitudxequipoxinsumo sei
+                INNER JOIN insumos i ON i.Id_insumo = sei.id_insumo
+                INNER JOIN solicitudes s ON s.Id_solicitud =  sei.Id_solicitud"));
 
         if($selectRequest){
             for($i=0;$i<count($selectRequest);$i++){
@@ -204,13 +305,15 @@ class Solicitudes extends Model
     	return $updaterquest;
     }
 
-    protected function updatestate($request,$state){
+    protected function updatestate($request,$idSolicitud){
 		$insertstate = DB::insert(DB::raw("
 			UPDATE 	estadomaquina
-			SET 	estado_solicitud = '".$state."',
+			SET 	estado_solicitud = '".$request["state"]."',
                     img_entregado = '".$request["img_entregada"]."',
-                    img_devuelto = '".$request["img_devuelta"]."'
-    		WHERE 	Id_solicitud = '".$request["idSolicitud"]."'
+                    img_devuelto = '".$request["img_devuelta"]."',
+                    comentario_ent = '".$request["coment_ent"]."',
+                    comentario_dev = '".$request["coment_dev"]."'
+    		WHERE 	Id_solicitud = '".$idSolicitud."'
 		"));
 
         return $insertstate;
@@ -242,6 +345,6 @@ class Solicitudes extends Model
             ")); 
 
         return $deleteReq;
-    } 
+    }
 
 }
