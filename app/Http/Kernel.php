@@ -18,6 +18,7 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \escom\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+        \Barryvdh\Cors\HandleCors::class,
     ];
 
     /**
@@ -57,5 +58,6 @@ class Kernel extends HttpKernel
         'guest' => \escom\Http\Middleware\RedirectIfAuthenticated::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'cors' => \app\Http\Middleware\Cors::class,
+        'cors' => \Barryvdh\Cors\HandleCors::class,
     ];
 }

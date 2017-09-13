@@ -93,9 +93,7 @@ class Equipos extends Model
         return $getMachineMaint;
     }
 
-    protected function insertMachine($request){
-    	
-    	
+    protected function insertMachine($request){	
     	$insertMachine = DB::insert(DB::raw("
     			INSERT INTO equipos(Equipo,Serial,Modelo,id_Marca,Estado,TiempoMantenimiento,TiempoUsoActual,Imagen)
 	    		VALUES 		('".$request["machine"]."',

@@ -4,6 +4,7 @@ namespace escom;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use escom\Solicitudes;
 use Carbon\Carbon;
 
 class Solicitudes extends Model
@@ -315,8 +316,29 @@ class Solicitudes extends Model
                     comentario_dev = '".$request["coment_dev"]."'
     		WHERE 	Id_solicitud = '".$idSolicitud."'
 		"));
+        
+        if($request["state"] == "4"){
+            $getHourDifference = Solicitudes::getHourSol($idSolicitud);
+
+            $updateHour = DB::insert(DB::raw("
+                UPDATE  equipos
+                SET     TiempoAcumulado = ".floatval($getHourDifference[0]->horasnum)." + TiempoAcumulado,
+                        TiempoUsoActual = ".floatval($getHourDifference[0]->horasnum)." + TiempoUsoActual
+                WHERE   Serial = '".$getHourDifference[0]->Id_maquina."'
+            "));            
+        }
+
 
         return $insertstate;
+    }
+
+    protected function getHourSol($idSolicitud){
+        $selectRequest = DB::select( DB::raw("
+                SELECT TIMESTAMPDIFF(Minute,s.Hora_inicio, s.Hora_final)/60 as horasnum,Id_maquina 
+                    FROM solicitudes s
+                    WHERE s.Id_solicitud = '".$idSolicitud."'
+                "));
+        return $selectRequest;
     }
 
 

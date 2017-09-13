@@ -14,7 +14,8 @@
 //Rutas para los webservices de usuario
 Route::resource('users','UsersController');
 Route::post('/users/login','UsersController@login');
-Route::put('/users/','UsersController@restorePassword');
+Route::put('/users/restore/{id}','UsersController@restorePasswordb');
+Route::get('/users/asnrespon/{id}','UsersController@getAnswerRespond');
 
 //Rutas para los webservices de equipos
 Route::resource('maquinas','EquiposController');

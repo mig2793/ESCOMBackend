@@ -15,9 +15,35 @@ class UsersController extends Controller
      */
     public function index()
     {
-        //
+        $getU = User::getRestorePass();
+
+        if($getU){
+            return response()->json([
+                "response" => $getU,
+                "status"     => 1
+            ]);
+        }else
+            return response()->json([
+                "response"  => "No hay datos",
+                "status"     => 0
+            ]);        
     }
 
+    public function getAnswerRespond($id)
+    {
+        $getU = User::getAnswerRespond($id);
+
+        if($getU){
+            return response()->json([
+                "response" => $getU,
+                "status"     => 1
+            ]);
+        }else
+            return response()->json([
+                "response"  => "No existe el usuario con este numero de documento",
+                "status"     => 0
+            ]);        
+    }
     /**
      * Show the form for creating a new resource.
      *
@@ -52,6 +78,8 @@ class UsersController extends Controller
                 'id_rol' => $request['rol'], 
                 'id_rango' => $request['range'],
                 'id_testudio' => $request['tipoestudio'],
+                'id_pregunta' => $request['id_pregunta'],
+                'respuesta' => $request['response'],
             ]);
 
 
@@ -92,6 +120,22 @@ class UsersController extends Controller
         }else{
             return response()->json([
                 'message' => "Error al cambiar la contraseña"
+            ]);   
+        }
+    }
+
+    public function restorePasswordb(Request $request, $id){
+        $restPass = User::restorePassword($request["password"],$id);
+
+        if($restPass>0){
+            return response()->json([
+                'message' => "Cambio de constraseña exitoso",
+                'state' => 1
+            ]);
+        }else{
+            return response()->json([
+                'message' => "Error al cambiar la contraseña",
+                'state' => 0
             ]);   
         }
     }

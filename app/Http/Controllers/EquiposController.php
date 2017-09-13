@@ -4,6 +4,8 @@ namespace escom\Http\Controllers;
 
 use Illuminate\Http\Request;
 use escom\Equipos;
+use Illuminate\Support\Facades\Input;
+use Image;
 
 class EquiposController extends Controller
 {
@@ -45,11 +47,25 @@ class EquiposController extends Controller
      */
     public function store(Request $request)
     {
+        /*$file = Input::file('file');
+        if ($file!=null) {
 
-            $filename = $request["image"];
-            return $filename;
+            $ext = $file->getClientOriginalExtension();
+            $image_name = $file->getClientOriginalName();
+        }
 
-        /*$validateMachine = Equipos::getMachine($request["serial"]);
+        if (!file_exists(public_path().'/uploads/images')) {
+            mkdir(public_path().'/uploads/images',0755, true);
+        }
+        
+        Image::make(Input::file('file'))->save(public_path().'/uploads/images/'.$image_name);
+
+                return response()->json([
+                        "response" => "Error al guardar",
+                        "state" => 0
+                    ]);  
+        */
+        $validateMachine = Equipos::getMachine($request["serial"]);
 
         if(!$validateMachine){
             $validateInsert = Equipos::insertMachine($request);
@@ -78,7 +94,7 @@ class EquiposController extends Controller
                     "response" => "El equipo ya se encuentra registrado en la base de datos",
                     "state" => 0
                 ]);        
-        }*/
+        }
     }
 
     /**

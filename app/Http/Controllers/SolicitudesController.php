@@ -75,44 +75,60 @@ class SolicitudesController extends Controller
     public function store(Request $request)
     {
         $mydate=getdate(date("U"));
-        $dateCurrent = "$mydate[mon]/$mydate[mday]/$mydate[year]";
-        if($request["fecha"]<$dateCurrent){
-            $validadate = Solicitudes::getRequestDate($request);
-            if($validadate[0]->count <= 0){
-                $validateInsert = Solicitudes::insertrequest($request);
-                
-                if($validateInsert > 0){
-                    $getLastId = Solicitudes::getLastId($request);
-                    $request["Id_solicitud"] = $getLastId[0]->Id_solicitud;
-                    $InsertState = Solicitudes::insertStateMachi($request);
-                    $countSupplies = count($request["supplies"]);
-                    if($countSupplies>0){
-                        $ValidateInsertMxS = Solicitudes::insertMxS($getLastId[0]->Id_solicitud,$request["idequipo"],$request["supplies"]);
-                        if(!$ValidateInsertMxS){
-                            return response()->json([
-                                    "response" => "Guardado satisfactoriamente"
-                                ]);                      
+        $date2 = "$mydate[year]/$mydate[mon]/$mydate[mday]";
+        $date1 = $request["fecha"];
+        $daterequest = date("Y-m-d", strtotime($date1));    
+        $dateCurrent = date("Y-m-d", strtotime($date2));
+        $datediff = abs(strtotime($daterequest) - strtotime($dateCurrent));  
+        $numberDays =  $datediff/86400;
+        $numberDays = intval($numberDays);
+        if($daterequest>=$dateCurrent){
+            if($numberDays > 0){
+                $validadate = Solicitudes::getRequestDate($request);
+                if($validadate[0]->count <= 0){
+                    $validateInsert = Solicitudes::insertrequest($request);
+                    
+                    if($validateInsert > 0){
+                        $getLastId = Solicitudes::getLastId($request);
+                        $request["Id_solicitud"] = $getLastId[0]->Id_solicitud;
+                        $InsertState = Solicitudes::insertStateMachi($request);
+                        $countSupplies = count($request["supplies"]);
+                        if($countSupplies>0){
+                            $ValidateInsertMxS = Solicitudes::insertMxS($getLastId[0]->Id_solicitud,$request["idequipo"],$request["supplies"]);
+                            if(!$ValidateInsertMxS){
+                                return response()->json([
+                                        "response" => "Guardado satisfactoriamente"
+                                    ]);                      
+                            }else{
+                                return response()->json([
+                                        "response" => "Hubo un error al guardar la información"
+                                    ]);                      
+                            }   
                         }else{
                             return response()->json([
-                                    "response" => "Hubo un error al guardar la información"
-                                ]);                      
-                        }   
+                                    "response" => "Guardado satisfactoriamente"
+                                ]);                        
+                        }
+              
                     }else{
                         return response()->json([
-                                "response" => "Guardado satisfactoriamente"
-                            ]);                        
+                                "response" => "Error al guardar"
+                            ]);               
                     }
-          
                 }else{
                     return response()->json([
-                            "response" => "Error al guardar"
-                        ]);               
+                            "response" => "Ya se encuentra una solicitud para usar la máquina para esta hora. Por favor elige otra."
+                        ]);        
                 }
             }else{
                 return response()->json([
-                        "response" => "Ya se encuentra una solicitud para usar la máquina para esta hora. Por favor elige otra."
-                    ]);        
-            }
+                    "response" => "Debes solicitar la máquina con 24 horas de antelación."
+                ]);                   
+            }                
+        }else{
+            return response()->json([
+                    "response" => "La fecha y hora no pueden ser menor a la actual."
+                ]);              
         }
     }
 

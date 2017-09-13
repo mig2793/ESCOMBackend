@@ -20,7 +20,7 @@ class User extends Model
      * @var array
      */
     protected $fillable = [
-        'documento','nombre','apellido','contrasena','cedula','id_rol','id_rango','id_testudio',
+        'documento','nombre','apellido','contrasena','cedula','id_rol','id_rango','id_testudio','id_pregunta','respuesta',
     ];
 
     protected function validateUser($request){
@@ -77,6 +77,17 @@ class User extends Model
         
     }
 
+    protected function getAnswerRespond($id){
+        $getU = DB::select( DB::raw("
+                SELECT      c.pregunta,
+                            u.respuesta
+                FROM usuarios u 
+                INNER JOIN contrasenarecuperar c ON c.id = u.id_pregunta
+                WHERE documento = '".$id."'"));  
+        
+        return $getU;        
+    }
+
     protected function getUser($nit){
 
         $getU = DB::select( DB::raw("
@@ -96,6 +107,14 @@ class User extends Model
                 WHERE documento = '".$nit."'"));  
 
         return $getU;     
+    }
+
+    protected function getRestorePass(){
+        $getU = DB::select( DB::raw("
+                SELECT *
+                FROM contrasenarecuperar "));  
+
+        return $getU;           
     }
 
     protected function updateUser($request,$id){

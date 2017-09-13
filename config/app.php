@@ -38,7 +38,7 @@ return [
     |
     */
 
-    'debug' => env('APP_DEBUG', false),
+    'debug' => env('APP_DEBUG', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -162,6 +162,7 @@ return [
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
+        Barryvdh\Cors\ServiceProvider::class,
 
         /*
          * Package Service Providers...
@@ -176,6 +177,7 @@ return [
         // escom\Providers\BroadcastServiceProvider::class,
         escom\Providers\EventServiceProvider::class,
         escom\Providers\RouteServiceProvider::class,
+        Intervention\Image\ImageServiceProvider::class
 
     ],
 
@@ -225,6 +227,8 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
+        'Input' => Illuminate\Support\Facades\Input::class,
+        'Image' => Intervention\Image\Facades\Image::class,
 
     ],
 
