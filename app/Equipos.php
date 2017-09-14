@@ -95,18 +95,27 @@ class Equipos extends Model
 
     protected function insertMachine($request){	
     	$insertMachine = DB::insert(DB::raw("
-    			INSERT INTO equipos(Equipo,Serial,Modelo,id_Marca,Estado,TiempoMantenimiento,TiempoUsoActual,Imagen)
+    			INSERT INTO equipos(Equipo,Serial,Modelo,id_Marca,Estado,TiempoMantenimiento,TiempoUsoActual)
 	    		VALUES 		('".$request["machine"]."',
 	    					'".$request["serial"]."',
 	    					'".$request["model"]."',
 	    					'".$request["id_mark"]."',
 	    					'".$request["state"]."',
 	    					".$request["timeMaintenance"].",
-	    					".$request["timeUseCurrent"].",
-	    					'".$request["image"]."');
+	    					".$request["timeUseCurrent"].");
     		"));
 
     	return $insertMachine;
+    }
+
+    protected function updateImage($img,$serial){
+        $updateMachine = DB::update(DB::raw("
+                UPDATE  equipos
+                SET     Imagen              =   '".$img."'
+                WHERE   Serial              =   '".$serial."'
+            "));
+
+        return $updateMachine;
     }
 
     protected function updateMachine($request,$serial){
@@ -117,8 +126,7 @@ class Equipos extends Model
     					id_Marca 			=  	'".$request["id_mark"]."',
     					Estado				=	'".$request["state"]."',
 			    		TiempoMantenimiento	=	".$request["timeMaintenance"].",
-			    		TiempoUsoActual		=  	".$request["timeUseCurrent"].",
-			    		Imagen				=  	'".$request["image"]."'
+			    		TiempoUsoActual		=  	".$request["timeUseCurrent"]."
 			    WHERE 	Serial 				=	'".$serial."'
     		"));
 

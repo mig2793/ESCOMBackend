@@ -47,24 +47,6 @@ class EquiposController extends Controller
      */
     public function store(Request $request)
     {
-        /*$file = Input::file('file');
-        if ($file!=null) {
-
-            $ext = $file->getClientOriginalExtension();
-            $image_name = $file->getClientOriginalName();
-        }
-
-        if (!file_exists(public_path().'/uploads/images')) {
-            mkdir(public_path().'/uploads/images',0755, true);
-        }
-        
-        Image::make(Input::file('file'))->save(public_path().'/uploads/images/'.$image_name);
-
-                return response()->json([
-                        "response" => "Error al guardar",
-                        "state" => 0
-                    ]);  
-        */
         $validateMachine = Equipos::getMachine($request["serial"]);
 
         if(!$validateMachine){
@@ -95,6 +77,37 @@ class EquiposController extends Controller
                     "state" => 0
                 ]);        
         }
+    }
+
+    public function storeImage(Request $request){
+
+        $file = Input::file('file');
+        if ($file!=null) {
+
+            $ext = $file->getClientOriginalExtension();
+            $image_name = $file->getClientOriginalName();
+        }
+
+        if (!file_exists(public_path().'/uploads/images')) {
+            mkdir(public_path().'/uploads/images',0755, true);
+        }
+        
+        Image::make(Input::file('file'))->save(public_path().'/uploads/images/'.$image_name);
+
+        $updateImage = Equipos::updateImage($image_name,$request["serial"]);
+
+        if($updateImage){
+            return response()->json([
+                "response" => "Guardado satisfactoriamente",
+                "state" => 0
+            ]);              
+        }else{
+            return response()->json([
+                "response" => "Error al insertar la imagen",
+                "state" => 0
+            ]);              
+        }
+
     }
 
     /**

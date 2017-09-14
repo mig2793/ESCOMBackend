@@ -20,6 +20,7 @@ Route::get('/users/asnrespon/{id}','UsersController@getAnswerRespond');
 //Rutas para los webservices de equipos
 Route::resource('maquinas','EquiposController');
 Route::post('/maquinas/insertMxSCon','EquiposController@insertMxSCon');
+Route::post('/maquinas/storageImage','EquiposController@storeImage');
 Route::get('/maquinas/suppliexm/{id}','EquiposController@getSupplieMachine');
 Route::get('/maquinas/mm/MachineMainte','EquiposController@MachineMainte');
 Route::put('/maquinas/stateMachine/{id}','EquiposController@updateState');
