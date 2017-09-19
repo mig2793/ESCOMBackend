@@ -44,6 +44,7 @@ Route::resource('maquinasInsumos','EquiXInsuController');
 Route::resource('solicitudes','SolicitudesController');
 Route::get('/solicitudes/getrequestAll/{id}','SolicitudesController@getrequestAll');
 Route::post('/solicitudes/getsolicitudesDate/','SolicitudesController@getrequestDateAll');
+Route::post('/solicitudes/storageImage','SolicitudesController@storeImage');
 //Rutas reportes
 Route::get('/report/{id}','ReportsController@getReport');
 

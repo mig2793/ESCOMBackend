@@ -4,6 +4,8 @@ namespace escom\Http\Controllers;
 
 use Illuminate\Http\Request;
 use escom\Solicitudes;
+use Illuminate\Support\Facades\Input;
+use Image;
 
 class SolicitudesController extends Controller
 {
@@ -151,6 +153,44 @@ class SolicitudesController extends Controller
                 "response" => "No se encontró la solicitud",
                 "state" => 0
             ]);
+    }
+
+    public function storeImage(Request $request){
+
+        $file = Input::file('file');
+        if ($file!=null) {
+
+            $ext = $file->getClientOriginalExtension();
+            $image_name = $file->getClientOriginalName();
+        }
+
+        if (!file_exists(public_path().'/uploads/images/estados/')) {
+            mkdir(public_path().'/uploads/images/estados/',0755, true);
+        }
+
+        if($request["accion"] == 1){
+            $image_name = "ent-".$request["id_solicitud"]."-".$image_name;
+        }else{
+            $image_name = "dev-".$request["id_solicitud"]."-".$image_name;
+        }
+        
+        
+        Image::make(Input::file('file'))->save(public_path().'/uploads/images/'.$image_name);
+
+        $updateImage = Solicitudes::updateImage($image_name,$request);
+
+        if($updateImage){
+            return response()->json([
+                "response" => "Guardado satisfactoriamente",
+                "state" => 0
+            ]);              
+        }else{
+            return response()->json([
+                "response" => "Error al insertar la imagen",
+                "state" => 0
+            ]);              
+        }
+
     }
 
     /**

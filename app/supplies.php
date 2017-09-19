@@ -67,6 +67,16 @@ class supplies extends Model
     	return $updatesupplie;
     }
 
+    protected function updateQuantitySupp($insumo){
+        $updatesupplie = DB::update(DB::raw("
+                UPDATE  insumos
+                SET     cantidad            =   cantidad - 1
+                WHERE   Id_insumo           =   '".$insumo->id_insumo."'
+            "));
+
+        return $updatesupplie;
+    }
+
     protected function deleteSupplie($supplie){
     	$deleteSup = DB::delete(DB::raw("
     			DELETE FROM insumos

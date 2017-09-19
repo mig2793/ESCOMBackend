@@ -1,1 +1,0 @@
-web: vendor/bin/escom-php-apache2 public/

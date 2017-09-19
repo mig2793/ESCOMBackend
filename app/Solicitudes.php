@@ -5,6 +5,7 @@ namespace escom;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use escom\Solicitudes;
+use escom\supplies;
 use Carbon\Carbon;
 
 class Solicitudes extends Model
@@ -42,6 +43,8 @@ class Solicitudes extends Model
                             em.img_devuelto,
                             em.comentario_ent,
                             em.comentario_dev,
+                            em.usuario_entrega,
+                            em.usuario_recibe,
                             datediff(s.Fecha, '".$date[0]."') as days
                 FROM solicitudes s 
                 INNER JOIN usuarios u ON u.documento = s.id_persona
@@ -79,7 +82,9 @@ class Solicitudes extends Model
                             em.img_entregado,
                             em.img_devuelto,
                             em.comentario_ent,
-                            em.comentario_dev
+                            em.comentario_dev,
+                            em.usuario_entrega,
+                            em.usuario_recibe
                 FROM solicitudes s 
                 INNER JOIN usuarios u ON u.documento = s.id_persona
                 INNER JOIN equipos e ON e.Serial = s.Id_maquina
@@ -126,6 +131,8 @@ class Solicitudes extends Model
                             em.estado_solicitud,
                             em.img_entregado,
                             em.img_devuelto,
+                            em.usuario_entrega,
+                            em.usuario_recibe,
                             '' as insumos,
                             datediff(s.Fecha, '".$date[0]."') as days
                 FROM solicitudes s 
@@ -175,6 +182,8 @@ class Solicitudes extends Model
                             em.estado_solicitud,
                             em.img_entregado,
                             em.img_devuelto,
+                            em.usuario_entrega,
+                            em.usuario_recibe,
                             '' as insumos,
                             datediff(s.Fecha, '".$date[0]."') as days
                 FROM solicitudes s 
@@ -310,10 +319,10 @@ class Solicitudes extends Model
 		$insertstate = DB::insert(DB::raw("
 			UPDATE 	estadomaquina
 			SET 	estado_solicitud = '".$request["state"]."',
-                    img_entregado = '".$request["img_entregada"]."',
-                    img_devuelto = '".$request["img_devuelta"]."',
                     comentario_ent = '".$request["coment_ent"]."',
-                    comentario_dev = '".$request["coment_dev"]."'
+                    comentario_dev = '".$request["coment_dev"]."',
+                    usuario_entrega = '".$request["usuario_entrega"]."',
+                    usuario_recibe = '".$request["usuario_recibe"]."'
     		WHERE 	Id_solicitud = '".$idSolicitud."'
 		"));
         
@@ -325,7 +334,16 @@ class Solicitudes extends Model
                 SET     TiempoAcumulado = ".floatval($getHourDifference[0]->horasnum)." + TiempoAcumulado,
                         TiempoUsoActual = ".floatval($getHourDifference[0]->horasnum)." + TiempoUsoActual
                 WHERE   Serial = '".$getHourDifference[0]->Id_maquina."'
-            "));            
+            "));
+
+            $getInsumos = Solicitudes::getrequest($idSolicitud);
+
+            if($getInsumos){
+                for($i=0;$i<count($getInsumos["insumos"]);$i++){
+                    $UpdateCantInsum = supplies::updateQuantitySupp($getInsumos["insumos"][$i]); 
+                }             
+            }
+
         }
 
 
@@ -349,7 +367,26 @@ class Solicitudes extends Model
             "));
 
         return $deleteMxS;
-    }  
+    } 
+
+    protected function updateImage($img,$request){
+
+        if($request["accion"] == 1){
+            $updateImageS = DB::update(DB::raw("
+                UPDATE  estadomaquina
+                SET     img_entregado       =   '".$img."'
+                WHERE   Id_solicitud        =   '".$request["id_solicitud"]."'
+            "));
+        }else{
+            $updateImageS = DB::update(DB::raw("
+                UPDATE  estadomaquina
+                SET     img_devuelto       =   '".$img."'
+                WHERE   Id_solicitud        =   '".$request["id_solicitud"]."'
+            "));           
+        }
+
+        return $updateImageS;
+    }
 
     protected function deleteRequest($id){
         $deleteReqSxE = DB::delete(DB::raw("
