@@ -288,8 +288,8 @@ class EquiposController extends Controller
                 ]);            
         }
     }
-	
-	public function destroyMachine($id){
+    
+    public function destroyMachine($id){
         $validateDelete = Equipos::deleteMachine($id);
 
         if($validateDelete > 0){
@@ -302,6 +302,6 @@ class EquiposController extends Controller
                     "response" => "Error al eliminar el elemento",
                     "state" => 0
                 ]);            
-        }		
-	}
+        }       
+    }
 }

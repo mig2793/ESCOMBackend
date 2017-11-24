@@ -22,7 +22,7 @@ class Equipos extends Model
     ];
 
     protected function getMachine($serial){
-    	$selectMachine = DB::select( DB::raw("
+        $selectMachine = DB::select( DB::raw("
                 SELECT      e.id_Equipos,
                             e.Equipo,
                             e.Serial,
@@ -50,7 +50,7 @@ class Equipos extends Model
             $selectMachine["insumos"] = $selectsupplies;
         }
 
-    	return $selectMachine;
+        return $selectMachine;
     }
 
     /*protected function getMachine($serial){
@@ -87,8 +87,8 @@ class Equipos extends Model
     }
 
     protected function getAllMachine(){
-    	$selectAllM = DB::select(DB::raw("
-    			SELECT  e.id_Equipos,
+        $selectAllM = DB::select(DB::raw("
+                SELECT  e.id_Equipos,
                         e.Equipo,
                         e.Serial,
                         e.Imagen,
@@ -97,7 +97,7 @@ class Equipos extends Model
                 WHERE e.Estado = 'Disponible'
                 ORDER BY e.Equipo desc"));
 
-    	return $selectAllM;
+        return $selectAllM;
     }
 
     protected function getReportMaint($id){
@@ -124,20 +124,20 @@ class Equipos extends Model
         return $getMachineMaint;
     }
 
-    protected function insertMachine($request){	
-    	$insertMachine = DB::insert(DB::raw("
-    			INSERT INTO equipos(Equipo,Serial,Modelo,id_Marca,Estado,TiempoMantenimiento,TiempoUsoActual,TiempoAcumulado)
-	    		VALUES 		('".$request["machine"]."',
-	    					'".$request["serial"]."',
-	    					'".$request["model"]."',
-	    					'".$request["id_mark"]."',
-	    					'".$request["state"]."',
-	    					".$request["timeMaintenance"].",
-	    					".$request["timeUseCurrent"]."),
+    protected function insertMachine($request){ 
+        $insertMachine = DB::insert(DB::raw("
+                INSERT INTO equipos(Equipo,Serial,Modelo,id_Marca,Estado,TiempoMantenimiento,TiempoUsoActual,TiempoAcumulado)
+                VALUES      ('".$request["machine"]."',
+                            '".$request["serial"]."',
+                            '".$request["model"]."',
+                            '".$request["id_mark"]."',
+                            '".$request["state"]."',
+                            ".$request["timeMaintenance"].",
+                            ".$request["timeUseCurrent"]."),
                             ".$request["timeUseCurrent"]."),;
-    		"));
+            "));
 
-    	return $insertMachine;
+        return $insertMachine;
     }
 
     protected function updateImage($img,$serial){
@@ -162,17 +162,17 @@ class Equipos extends Model
         if($acumulate<0)
             $acumulate = 0;
 
-    	$updateMachine = DB::update(DB::raw("
-    			UPDATE 	equipos
-    			SET 	Equipo 				=  	'".$request["machine"]."',
-    					Modelo 				=  	'".$request["model"]."',
-    					id_Marca 			=  	'".$request["id_mark"]."',
-    					Estado				=	'".$request["state"]."',
-			    		TiempoMantenimiento	=	".$request["timeMaintenance"].",
-			    		TiempoUsoActual		=  	".$request["timeUseCurrent"].",
+        $updateMachine = DB::update(DB::raw("
+                UPDATE  equipos
+                SET     Equipo              =   '".$request["machine"]."',
+                        Modelo              =   '".$request["model"]."',
+                        id_Marca            =   '".$request["id_mark"]."',
+                        Estado              =   '".$request["state"]."',
+                        TiempoMantenimiento =   ".$request["timeMaintenance"].",
+                        TiempoUsoActual     =   ".$request["timeUseCurrent"].",
                         TiempoAcumulado     =   ".$acumulate." + TiempoAcumulado
-			    WHERE 	Serial 				=	'".$serial."'
-    		"));
+                WHERE   Serial              =   '".$serial."'
+            "));
 
         if(floatval($request["timeUseCurrent"])>=floatval($request["timeMaintenance"])){
             $updateState = DB::update(DB::raw("
@@ -182,7 +182,7 @@ class Equipos extends Model
             "));            
         }
 
-    	return $updateMachine;
+        return $updateMachine;
     }
 
     protected function updateMachineState($request,$serial){
@@ -238,8 +238,8 @@ class Equipos extends Model
 
         return $deleteMxS;
     }   
-	
-	protected function deleteMachine($id){
+    
+    protected function deleteMachine($id){
 
         $deleteMxS = DB::delete(DB::raw("
             DELETE FROM equiposxinsumo
@@ -252,6 +252,6 @@ class Equipos extends Model
                 WHERE Serial = '".$id."'
             "));
 
-        return $deleteMach;		
-	}
+        return $deleteMach;     
+    }
 }

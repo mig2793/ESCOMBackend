@@ -1,272 +1,200 @@
 <?php
-namespace escom\Http\Controllers;
 
+namespace escom;
+
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Http\Request;
-use escom\User;
 use Illuminate\Support\Facades\Hash;
+use Crypt;
 
-class UsersController extends Controller
+class User extends Model
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        $getU = User::getRestorePass();
 
-        if($getU){
-            return response()->json([
-                "response" => $getU,
-                "status"     => 1
-            ]);
-        }else
-            return response()->json([
-                "response"  => "No hay datos",
-                "status"     => 0
-            ]);        
+    public $timestamps = false;
+
+    protected $table = 'usuarios';
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'documento','nombre','apellido','contrasena','cedula','id_rol','id_rango','id_testudio','id_pregunta','respuesta','estado',
+    ];
+
+    protected function validateUser($request){
+        $userValidate = DB::table('usuarios')
+                        ->select(DB::raw('count(*) as count'))
+                        ->where('documento', '=', $request)
+                        ->get();
+
+        $countValidate = json_decode($userValidate,true);
+        $countValidate = (int) $countValidate[0]["count"];
+
+        return $countValidate;
     }
 
-    public function getAnswerRespond($id)
-    {
-        $getU = User::getAnswerRespond($id);
+    protected function login($nit,$password){
 
-        if($getU){
-            return response()->json([
-                "response" => $getU,
-                "status"     => 1
-            ]);
+        $passwordhash = DB::select( DB::raw("SELECT contrasena FROM usuarios WHERE documento = '".$nit."'"));
+
+        if(isset($passwordhash[0]->contrasena)){
+
+            $passwordDecrypt = Hash::check($password,$passwordhash[0]->contrasena);
+
+            if($passwordDecrypt){
+                $login = DB::select( DB::raw("
+                        SELECT      u.documento,
+                                    u.nombre,
+                                    u.apellido,
+                                    ro.id_rol,
+                                    r.id_rango,
+                                    ro.rol,
+                                    r.rango,
+                                    te.id,
+                                    te.tipoEstudio,
+                                    u.estado
+                        FROM usuarios u 
+                        INNER JOIN rangos r ON r.id_rango = u.id_rango
+                        INNER JOIN rol ro ON ro.id_rol = u.id_rol
+                        INNER JOIN tipoestudio te ON te.id = u.id_testudio
+                        WHERE documento = '".$nit."'"));
+
+                return response()->json([
+                    'message' => $login,
+                    'state' => 1
+                ]);
+            }else
+                return response()->json([
+                    'message' => "Contraseña incorrecta",
+                    'state' => 0
+                ]);
         }else
             return response()->json([
-                "response"  => "No existe el usuario con este numero de documento",
-                "status"     => 0
-            ]);        
-    }
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
+                'message' => 'El usuario no se encuentra registrado',
+                'state' => 0
+            ]);
         
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    //DB::select( DB::raw("SELECT COUNT(*) FROM usuarios WHERE cedula = ".$request['nit'].""));
-    public function store(Request $request)
-    {
-        $countValidate = User::validateUser($request['nit']);
-        if($countValidate > 0){
-            return response()->json([
-                    "message" => "El usuario ya existe en la base de datos",
-                    "state"     => 0
-                ]);
-        }else{
-            $validatesave = User::create([
-                'documento' => $request['nit'],
-                'nombre' => $request['name'],
-                'apellido' => $request['lastname'],
-                'contrasena' => Hash::make($request['password']),
-                'id_rol' => $request['rol'], 
-                'id_rango' => $request['range'],
-                'id_testudio' => $request['tipoestudio'],
-                'id_pregunta' => $request['id_pregunta'],
-                'respuesta' => $request['response'],
-                'estado' => $request['estado'],
-            ]);
-
-
-            $validatesave = json_decode($validatesave,true);
-
-            if(strlen($validatesave["documento"])>0){
-                $datauser = User::getUser($request['nit']);
-                 return response()->json([
-                    "message"   => "Usuario creado satisfactoriamente",
-                    "data"      => $datauser,
-                    "state"     => 1
-                ]);     
-            }else{
-                 return response()->json([
-                    "message" => "Error al crear el usuario",
-                    "state"     => 0
-                ]);     
-            }
-      
-        }
-
+    protected function getAnswerRespond($id){
+        $getU = DB::select( DB::raw("
+                SELECT      c.pregunta,
+                            u.respuesta
+                FROM usuarios u 
+                INNER JOIN contrasenarecuperar c ON c.id = u.id_pregunta
+                WHERE documento = '".$id."'"));  
+        
+        return $getU;        
     }
 
-    public function login(Request $request){
+    protected function getUser($nit){
 
-        $data = User::login($request["nit"],$request["password"]);
-        //$data = json_decode($data,true);
-        return $data;
+        $getU = DB::select( DB::raw("
+                SELECT      u.documento,
+                            u.nombre,
+                            u.apellido,
+                            ro.id_rol,
+                            r.id_rango,
+                            ro.rol,
+                            r.rango,
+                            te.id,
+                            te.tipoEstudio
+                FROM usuarios u 
+                INNER JOIN rangos r ON r.id_rango = u.id_rango
+                INNER JOIN rol ro ON ro.id_rol = u.id_rol
+                INNER JOIN tipoestudio te ON te.id = u.id_testudio
+                WHERE documento = '".$nit."'"));  
+
+        return $getU;     
     }
 
-    public function restorePass($password,$id){
-        $restPass = User::restorePassword($password,$id);
+    protected function getRestorePass(){
+        $getU = DB::select( DB::raw("
+                SELECT *
+                FROM contrasenarecuperar "));  
 
-        if($restPass>0){
-            return response()->json([
-                'message' => "Cambio de constraseña exitoso"
-            ]);
-        }else{
-            return response()->json([
-                'message' => "Error al cambiar la contraseña"
-            ]);   
-        }
+        return $getU;           
     }
 
-    public function restorePasswordb(Request $request, $id){
-        $restPass = User::restorePassword($request["password"],$id);
+    protected function updateUser($request,$id){
 
-        if($restPass>0){
-            return response()->json([
-                'message' => "Cambio de constraseña exitoso",
-                'state' => 1
-            ]);
-        }else{
-            return response()->json([
-                'message' => "Error al cambiar la contraseña",
-                'state' => 0
-            ]);   
-        }
+        $UsertUpd = DB::update( DB::raw("
+                    UPDATE  usuarios
+                    SET     nombre      =   '".$request['name']."',
+                            apellido    =   '".$request['lastname']."',
+                            id_rol      =   '".$request['rol']."',
+                            id_rango    =   '".$request['range']."',
+                            id_testudio =   '".$request['tipoestudio']."',
+                            estado      =   '".$request['estado']."'
+                    WHERE documento = '".$id."'"));  
+
+        return $UsertUpd;   
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        $getU = User::getUser($id);
+    protected function restorePassword($password,$id){
 
-        if(isset($getU[0]->documento)){
-            return response()->json([
-                "response" => $getU
-            ]);
-        }else
-            return response()->json([
-                "response"  => "No hay ningun usuario registrado con este numero de documento",
-                "status"     => 0
-            ]);
+        $updatePassword = DB::update(DB::raw(" 
+                        UPDATE usuarios
+                        SET contrasena = '".Hash::make($password)."'
+                        WHERE documento = '".$id."'"));
+
+        return $updatePassword;
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
+    protected function rejectUser($id){
+        $UsertUpd = DB::update( DB::raw("
+                    UPDATE  usuarios
+                    SET     estado      =   '3'
+                    WHERE documento = '".$id."'"));  
+
+        return $UsertUpd; 
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
+    protected function deleteUser($id){
+        $UsertUpd = DB::update( DB::raw("
+                    DELETE  FROM usuarios
+                    WHERE documento = '".$id."'"));  
 
-        if($request['password'] != ""){
-            $changePassword = User::restorePassword($request['password'],$id);
-        }
-
-        $updateU = User::updateUser($request, $id);
-
-        if($updateU > 0 || $changePassword > 0){
-            return response()->json([
-                    "response" => "Datos actualizados satisfactoriamente"
-                ]);            
-        }else{
-            return response()->json([
-                    "response" => "Error al actualizar"
-                ]);               
-        }
-
+        return $UsertUpd; 
     }
 
-    protected function updateStateUser(Request $request){
-        $validateDelete = User::updateStateUser($request["id"]);
+    protected function updateStateUser($id){
+        $UsertUpd = DB::update( DB::raw("
+                    UPDATE  usuarios
+                    SET     estado      =   '2'
+                    WHERE documento = '".$id."'"));  
 
-        if($validateDelete > 0){
-            return response()->json([
-                    "response" => "Datos actualizados satisfactoriamente",
-                    "state" => 1
-                ]);
-        }else{
-            return response()->json([
-                    "response" => "Error al actualizar el elemento",
-                    "state" => 0
-                ]);            
-        }        
-    }
-
-    protected function updateStateUserReject(Request $request){
-        $validateDelete = User::rejectUser($request["id"]);
-
-        if($validateDelete > 0){
-            return response()->json([
-                    "response" => "Datos actualizados satisfactoriamente",
-                    "state" => 1
-                ]);
-        }else{
-            return response()->json([
-                    "response" => "Error al actualizar el elemento",
-                    "state" => 0
-                ]);            
-        }        
+        return $UsertUpd;        
     }
 
     protected function getUsersApp(){
-        $getU = User::getUsersApp();
+        $getU = DB::select( DB::raw("
+                SELECT      u.documento,
+                            u.nombre,
+                            u.apellido,
+                            ro.id_rol,
+                            r.id_rango,
+                            ro.rol,
+                            r.rango,
+                            te.id,
+                            te.tipoEstudio
+                FROM usuarios u 
+                INNER JOIN rangos r ON r.id_rango = u.id_rango
+                INNER JOIN rol ro ON ro.id_rol = u.id_rol
+                INNER JOIN tipoestudio te ON te.id = u.id_testudio
+                WHERE estado = 1"));  
 
-        if(isset($getU[0]->documento)){
-            return response()->json([
-                "response" => $getU
-            ]);
-        }else
-            return response()->json([
-                "response"  => "No hay datos",
-                "status"     => 0
-            ]);         
+        return $getU;           
     }
 
     /**
-     * Remove the specified resource from storage.
+     * The attributes that should be hidden for arrays.
      *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @var array
      */
-    public function destroy($id)
-    {
-        $validateDelete = User::deleteUser($id);
-
-        if($validateDelete > 0){
-            return response()->json([
-                    "response" => "Eliminado satisfactoriamente",
-                    "state" => 1
-                ]);
-        }else{
-            return response()->json([
-                    "response" => "Error al eliminar el elemento",
-                    "state" => 0
-                ]);            
-        }           
-    }
+    protected $hidden = [
+        'password', 'remember_token',
+    ];
 }
