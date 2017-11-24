@@ -26,7 +26,7 @@ class Solicitudes extends Model
     protected function getrequest($idsolicitud){
         $date = Carbon::today();
         $date =  preg_split('~ ~',$date);
-        $selectRequest = DB::select( DB::raw("
+    	$selectRequest = DB::select( DB::raw("
                 SELECT      s.Id_solicitud,
                             s.Id_maquina,
                             e.Equipo,
@@ -56,7 +56,7 @@ class Solicitudes extends Model
         $selectsupplies = DB::select( DB::raw("
                 SELECT  sei.Id_solicitud,
                         sei.id_insumo,
-                        i.insumo
+                		i.insumo
                 FROM solicitudxequipoxinsumo sei
                 INNER JOIN insumos i ON i.Id_insumo = sei.id_insumo 
                 WHERE sei.Id_solicitud = '".$idsolicitud."'"));
@@ -65,7 +65,7 @@ class Solicitudes extends Model
             $selectRequest["insumos"] = $selectsupplies;
         }
 
-        return $selectRequest;
+    	return $selectRequest;
     }
 
     protected function getrequestDateAll($date){
@@ -239,23 +239,23 @@ class Solicitudes extends Model
         return $selectRequest;       
     }
 
-    protected function insertrequest($request){ 
-        $insertsolicitud = DB::insert(DB::raw("
-                INSERT INTO solicitudes(Id_maquina,
-                                        id_persona,
-                                        Fecha,
-                                        Hora_inicio,
-                                        Hora_final,
-                                        Detalles_Actividad)
-                VALUES      ('".$request["idequipo"]."',
-                            '".$request["idpersona"]."',
-                            '".$request["fecha"]."',
-                            '".$request["horaInicio"]."',
-                            '".$request["horaFin"]."',
-                            '".$request["detalleActividad"]."');
-            "));
+    protected function insertrequest($request){	
+    	$insertsolicitud = DB::insert(DB::raw("
+    			INSERT INTO solicitudes(Id_maquina,
+						    			id_persona,
+						    			Fecha,
+						    			Hora_inicio,
+						    			Hora_final,
+						    			Detalles_Actividad)
+	    		VALUES 		('".$request["idequipo"]."',
+	    					'".$request["idpersona"]."',
+	    					'".$request["fecha"]."',
+	    					'".$request["horaInicio"]."',
+	    					'".$request["horaFin"]."',
+	    					'".$request["detalleActividad"]."');
+    		"));
 
-        return $insertsolicitud;
+    	return $insertsolicitud;
     }
 
     protected function insertStateMachi($request){ 
@@ -279,12 +279,12 @@ class Solicitudes extends Model
         $arraybad = array();
         $countSupplies = count($supplies);
         for ($i = 0; $i < $countSupplies; $i++) { 
-            $insertMxS = DB::insert(DB::raw("
-                INSERT INTO solicitudxequipoxinsumo(Id_solicitud,id_equipos,id_insumo)
-                VALUES      ('".$idSolicitud."',
-                            '".$idEquipo."',
-                            '".$supplies[$i]."');
-            "));
+    		$insertMxS = DB::insert(DB::raw("
+    			INSERT INTO solicitudxequipoxinsumo(Id_solicitud,id_equipos,id_insumo)
+	    		VALUES 		('".$idSolicitud."',
+	    					'".$idEquipo."',
+	    					'".$supplies[$i]."');
+    		"));
             if($insertMxS <= 0)
                 array_push($arraybad,$supplies[$i]);          
         }
@@ -293,40 +293,40 @@ class Solicitudes extends Model
     }
 
     protected function insertstate($idSolicitud,$state){
-        $insertstate = DB::insert(DB::raw("
-            INSERT INTO estadomaquina(Id_solicitud,estado_solicitud)
-            VALUES      ('".$idSolicitud."',
-                        '".$state."');
-        "));
+		$insertstate = DB::insert(DB::raw("
+			INSERT INTO estadomaquina(Id_solicitud,estado_solicitud)
+    		VALUES 		('".$idSolicitud."',
+    					'".$state."');
+		"));
 
         return $insertstate;
     }
 
     protected function updaterequest($request,$solicitud){
-        $updaterquest = DB::update(DB::raw("
-                UPDATE  solicitudes
-                SET     Id_maquina          =   '".$request["machine"]."',
-                        Fecha               =   '".$request["date"]."',
-                        Hora_inicio         =   '".$request["houri"]."',
-                        Hora_final          =   '".$request["hourf"]."',
-                        Detalles_Actividad  =   ".$request["datailsAct"]."
-                WHERE   Serial              =   '".$solicitud."'
-            "));
+    	$updaterquest = DB::update(DB::raw("
+    			UPDATE 	solicitudes
+    			SET 	Id_maquina			=  	'".$request["machine"]."',
+    					Fecha 				=  	'".$request["date"]."',
+    					Hora_inicio 		=  	'".$request["houri"]."',
+    					Hora_final			=	'".$request["hourf"]."',
+			    		Detalles_Actividad	=	".$request["datailsAct"]."
+			    WHERE 	Serial 				=	'".$solicitud."'
+    		"));
 
-        return $updaterquest;
+    	return $updaterquest;
     }
 
     protected function updatestate($request,$idSolicitud){
 
-        $insertstate = DB::insert(DB::raw("
-            UPDATE  estadomaquina
-            SET     estado_solicitud = '".$request["state"]."',
+		$insertstate = DB::insert(DB::raw("
+			UPDATE 	estadomaquina
+			SET 	estado_solicitud = '".$request["state"]."',
                     comentario_ent = '".$request["coment_ent"]."',
                     comentario_dev = '".$request["coment_dev"]."',
                     usuario_entrega = '".$request["usuario_entrega"]."',
                     usuario_recibe = '".$request["usuario_recibe"]."'
-            WHERE   Id_solicitud = '".$idSolicitud."'
-        "));
+    		WHERE 	Id_solicitud = '".$idSolicitud."'
+		"));
         
         $getHourDifference = Solicitudes::getHourSol($idSolicitud);
 
