@@ -127,6 +127,8 @@ class User extends Model
                             id_rol      =   '".$request['rol']."',
                             id_rango    =   '".$request['range']."',
                             id_testudio =   '".$request['tipoestudio']."',
+                            id_pregunta =   '".$request['id_pregunta']."',
+                            respuesta   =   '".$request['response']."',
                             estado      =   '".$request['estado']."'
                     WHERE documento = '".$id."'"));  
 

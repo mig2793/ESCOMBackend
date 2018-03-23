@@ -133,8 +133,8 @@ class Equipos extends Model
 	    					'".$request["id_mark"]."',
 	    					'".$request["state"]."',
 	    					".$request["timeMaintenance"].",
-	    					".$request["timeUseCurrent"]."),
-                            ".$request["timeUseCurrent"]."),;
+	    					".$request["timeUseCurrent"].",
+                            ".$request["timeUseCurrent"].");
     		"));
 
     	return $insertMachine;

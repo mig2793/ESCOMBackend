@@ -243,7 +243,7 @@ class SolicitudesController extends Controller
 
         $validateHour = Solicitudes::ValidateHour($id);
 
-        if($validateHour[0]->count > 0){
+        if($validateHour[0]->count > 0 || ($request["state"] == 2 || $request["state"] == 3 || $request["state"] == 5)){
 
             $validateUpdateState = Solicitudes::updatestate($request, $id);
             if($validateUpdateState > 0){

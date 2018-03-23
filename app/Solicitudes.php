@@ -232,7 +232,8 @@ class Solicitudes extends Model
                 SELECT s.Hora_inicio,s.Hora_final,
                 (select count(*) from solicitudes) count
                 FROM solicitudes s 
-                WHERE s.Fecha = '".$date["fecha"]."' 
+                WHERE s.Fecha = '".$date["fecha"]."'
+                AND s.Id_maquina = '".$date["idequipo"]."'
                 AND (s.Hora_inicio BETWEEN '".$date["horaInicio"]."' AND '".$date["horaFin"]."'
                 OR s.Hora_final BETWEEN '".$date["horaInicio"]."' AND '".$date["horaFin"]."')")); 
 
