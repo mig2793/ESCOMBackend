@@ -368,7 +368,7 @@ class Solicitudes extends Model
 
     protected function getHourSol($idSolicitud){
         $selectRequest = DB::select( DB::raw("
-                SELECT TIMESTAMPDIFF(Minute,s.Hora_inicio, s.Hora_final)/60 as horasnum,Id_maquina 
+                SELECT TIMESTAMPDIFF(MINUTE,CONCAT(s.Fecha,' ',s.Hora_inicio),CONCAT(s.Fecha,' ',s.Hora_final))/60 as horasnum,Id_maquina 
                     FROM solicitudes s
                     WHERE s.Id_solicitud = '".$idSolicitud."'
                 "));
@@ -407,14 +407,16 @@ class Solicitudes extends Model
     protected function ValidateHour($id){
 
         $mydate=getdate(date("U"));
-        $dateCurrent = "$mydate[hours]:$mydate[minutes]:$mydate[seconds]";
+		$hour = count("$mydate[hours]")>1 ? "$mydate[hours]" : "0"."$mydate[hours]";
+		$minute = count("$mydate[minutes]")>1 ? "$mydate[minutes]" : "0"."$mydate[minutes]";
+        $dateCurrent = $hour.":".$minute.":"."$mydate[seconds]";
         $date = "$mydate[year]/$mydate[mon]/$mydate[mday]";
         $validateHour =  DB::select( DB::raw("
                 SELECT count(*) as count
                     FROM solicitudes s
                     WHERE s.Id_solicitud = '".$id."'
                     and '".$dateCurrent."' between s.Hora_inicio
-                    and DATE_ADD(s.Hora_final, INTERVAL 2 HOUR) 
+                    and s.Hora_final 
                     and s.Fecha = '".$date."' 
                 "));
         return $validateHour;       

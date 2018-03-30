@@ -176,9 +176,9 @@ class SolicitudesController extends Controller
 
     public function storeImage(Request $request){
 
-        $validateHour = Solicitudes::ValidateHour($request["id_solicitud"]);
+        //$validateHour = Solicitudes::ValidateHour($request["id_solicitud"]);
 
-        if($validateHour[0]->count > 0){
+        //if($validateHour[0]->count > 0){
             $file = Input::file('file');
             if ($file!=null) {
 
@@ -212,12 +212,12 @@ class SolicitudesController extends Controller
                     "state" => 0
                 ]);              
             }            
-        }else{
-            return response()->json([
-                "response" => "Debes cambiar el estado de la solicitud en el rango de horas que se pidió la máquina.",
-                "state" => 0
-            ]);               
-        }
+        //}else{
+        //    return response()->json([
+        //        "response" => "Debes cambiar el estado de la solicitud en el rango de horas que se pidió la máquina.",
+        //        "state" => 0
+        //    ]);               
+        //}
 
     }
 
@@ -241,9 +241,9 @@ class SolicitudesController extends Controller
      */
     public function update(Request $request, $id){
 
-        $validateHour = Solicitudes::ValidateHour($id);
+        //$validateHour = Solicitudes::ValidateHour($id);
 
-        if($validateHour[0]->count > 0 || ($request["state"] == 2 || $request["state"] == 3 || $request["state"] == 5)){
+        //if($validateHour[0]->count > 0 || ($request["state"] == 2 || $request["state"] == 3 || $request["state"] == 5)){
 
             $validateUpdateState = Solicitudes::updatestate($request, $id);
             if($validateUpdateState > 0){
@@ -257,12 +257,12 @@ class SolicitudesController extends Controller
                         "status"   => "0"
                     ]);               
             }
-        }else{
-            return response()->json([
-                "response" => "Debes cambiar el estado de la solicitud en el rango de horas que se pidió la máquina.",
-                "state" => 0
-            ]);               
-        }
+        //}else{
+        //    return response()->json([
+        //        "response" => "Debes cambiar el estado de la solicitud en el rango de horas que se pidió la máquina.",
+        //        "state" => 0
+        //    ]);               
+        //}
     }
 
     /**
